@@ -1,0 +1,186 @@
+.data
+    # --- MEMORY ALLOCATION ---
+    pages:      .space 400         # Reserve space for up to 100 pages input
+    frames:     .word -1, -1, -1   # 3 Frames
+    
+    # --- PROMPTS & STRINGS ---
+    msg_len:    .asciiz "Enter total number of pages: "
+    msg_val:    .asciiz "Enter page value: "
+    
+    # --- OUTPUT STRINGS ---
+    str_req:    .asciiz "\nRequest: "
+    str_miss:   .asciiz " [MISS] Stack: ["
+    str_hit:    .asciiz " [HIT]  Stack: ["
+    str_space:  .asciiz " "
+    str_close:  .asciiz "]"
+    str_fault:  .asciiz "\n\nTotal Page Faults: "
+
+.text
+.globl main
+
+main:
+    # ============================
+    #      1. GET USER INPUT
+    # ============================
+    
+    # Ask for Total Number of Pages
+    li $v0, 4
+    la $a0, msg_len
+    syscall
+    
+    # Read Integer (Input -> $v0)
+    li $v0, 5
+    syscall
+    move $s1, $v0       # $s1 = Total Pages (Limit)
+
+    # Initialize Loop for Input
+    la $s0, pages       # $s0 = Address of pages array
+    li $t0, 0           # i = 0
+
+input_loop:
+    beq $t0, $s1, start_simulation # If i == Total, start sim
+
+    # Prompt "Enter page value: "
+    li $v0, 4
+    la $a0, msg_val
+    syscall
+
+    # Read Integer
+    li $v0, 5
+    syscall
+    
+    # Store Input into Array
+    sw $v0, 0($s0)      # Store at current array address
+    
+    # Update Pointers
+    addi $s0, $s0, 4    # Move to next memory slot
+    addi $t0, $t0, 1    # i++
+    j input_loop
+
+# ============================
+#    2. START SIMULATION
+# ============================
+start_simulation:
+    # Reset Pointers/Counters for the Logic
+    la $s0, pages       # Reset pointer to start of pages
+    la $s2, frames      # Pointer to frames
+    
+    li $s3, 0           # Count (Size of stack)
+    li $s4, 0           # Page Faults
+    li $t0, 0           # Reset i = 0
+
+# ============================
+#        MAIN LOGIC LOOP
+# ============================
+loop:
+    beq $t0, $s1, exit_program  # If i == Total, Exit
+
+    lw $t1, 0($s0)      # Load current Page Request
+    
+    # Print Request
+    li $v0, 4
+    la $a0, str_req
+    syscall
+    li $v0, 1
+    move $a0, $t1
+    syscall
+
+    # --- CHECK FOR HIT ---
+    li $t2, 0           # Hit Flag (0=False)
+    li $t3, 0           # j = 0
+
+check_hit_loop:
+    beq $t3, $s3, hit_check_done # If checked all, stop
+    
+    # Calculate address
+    sll $t8, $t3, 2     # offset = j*4
+    add $t8, $s2, $t8   # addr = frames + offset
+    lw  $t4, 0($t8)     # load value
+    
+    beq $t4, $t1, is_hit
+    
+    addi $t3, $t3, 1    # j++
+    j check_hit_loop
+
+is_hit:
+    li $t2, 1           # Set Hit Flag
+
+hit_check_done:
+    beq $t2, 1, handle_hit
+
+    # --- HANDLE MISS ---
+    addi $s4, $s4, 1    # Faults++
+    
+    # Print MISS String
+    li $v0, 4
+    la $a0, str_miss
+    syscall
+
+    li $t9, 3
+    bge $s3, $t9, replace_lifo
+    
+    # Not Full -> Append
+    move $t5, $s3       # Index = Count
+    addi $s3, $s3, 1    # Count++
+    j perform_write
+
+replace_lifo:
+    # Full -> Replace Index 2 (Last In)
+    li $t5, 2
+
+perform_write:
+    sll $t6, $t5, 2
+    add $t8, $s2, $t6
+    sw  $t1, 0($t8)
+    j print_stack
+
+handle_hit:
+    # Print HIT String
+    li $v0, 4
+    la $a0, str_hit
+    syscall
+
+# --- PRINT STACK CONTENT ---
+print_stack:
+    li $t7, 0           # k = 0
+    la $t8, frames      # Reset pointer to frames
+
+print_loop:
+    beq $t7, $s3, print_end
+    
+    li $v0, 4
+    la $a0, str_space
+    syscall
+    
+    lw $a0, 0($t8)
+    li $v0, 1
+    syscall
+    
+    addi $t8, $t8, 4
+    addi $t7, $t7, 1
+    j print_loop
+
+print_end:
+    li $v0, 4
+    la $a0, str_close
+    syscall
+
+    # --- NEXT ITERATION ---
+    addi $s0, $s0, 4    # Next page input
+    addi $t0, $t0, 1    # i++
+    j loop
+
+# ============================
+#        EXIT
+# ============================
+exit_program:
+    li $v0, 4
+    la $a0, str_fault
+    syscall
+    
+    li $v0, 1
+    move $a0, $s4
+    syscall
+    
+    li $v0, 10
+    syscall

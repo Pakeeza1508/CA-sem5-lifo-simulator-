@@ -1,539 +1,713 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LIFO Page Replacement Simulator</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-</head>
-<body>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="data:,">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+  </head>
+  <body>
     <div class="app-container">
-        <header class="header">
-            <div class="logo">
-                <i class='bx bx-layer'></i>
-                <h1>LIFO Page Replacement Simulator</h1>
+      <header class="header">
+        <div class="logo">
+          <i class="bx bx-layer"></i>
+          <h1>LIFO Page Replacement Simulator</h1>
+        </div>
+        <nav class="tabs">
+          <button class="tab-btn active" data-tab="explanation">
+            <i class="bx bx-book-open"></i>
+            <span>Explanation</span>
+          </button>
+          <button class="tab-btn" data-tab="simulator">
+            <i class="bx bx-play-circle"></i>
+            <span>Simulator</span>
+          </button>
+          <!-- <button id="narrateBtn" class="btn">🔊 Narrate Steps</button> -->
+          <!-- Inside <div class="button-row"> -->
+
+          <button class="btn btn-secondary" id="narrateBtn">
+            <i class="bx bx-volume-mute"></i>
+            <span>Narration: OFF</span>
+          </button>
+          <div style="display:flex; gap:8px; align-items:center;">
+    <button id="exportPDF" class="btn export-pdf-btn" title="Export stack report as PDF">
+      <i class="bx bx-download"></i>
+      <span>Export Report</span>
+    </button>
+  </div>
+        </nav>
+      </header>
+
+      <main class="main-content">
+        <!-- EXPLANATION TAB -->
+        <section id="explanation" class="tab-content active">
+          <div class="explanation-grid">
+            <div class="explanation-main">
+              <div class="card">
+                <div class="card-header">
+                  <i class="bx bx-help-circle"></i>
+                  <h2>What is LIFO Page Replacement?</h2>
+                </div>
+                <div class="card-body">
+                  <p>
+                    LIFO (Last In, First Out) is a page replacement algorithm
+                    used in operating systems to manage memory. When a page
+                    fault occurs and memory is full, the algorithm removes the
+                    <strong>most recently added page</strong> to make room for
+                    the new one.
+                  </p>
+                  <div class="mnemonic-box">
+                    <i class="bx bx-bulb"></i>
+                    <div>
+                      <strong>Think of it like a stack of plates:</strong>
+                      <p>
+                        The last plate you put on top is the first one you take
+                        off. Similarly, the last page loaded into memory is the
+                        first one to be replaced.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <i class="bx bx-cog"></i>
+                  <h2>How LIFO Works (Step-by-Step)</h2>
+                </div>
+                <div class="card-body">
+                  <div class="steps-list">
+                    <div class="step">
+                      <span class="step-number">1</span>
+                      <div class="step-content">
+                        <h4>Check if page exists in memory</h4>
+                        <p>
+                          When a page is requested, first check if it's already
+                          in one of the available frames.
+                        </p>
+                      </div>
+                    </div>
+                    <div class="step">
+                      <span class="step-number">2</span>
+                      <div class="step-content">
+                        <h4>Page Hit (Found)</h4>
+                        <p>
+                          If the page is already in memory, it's a
+                          <span class="hit-text">HIT</span>. No replacement
+                          needed.
+                        </p>
+                      </div>
+                    </div>
+                    <div class="step">
+                      <span class="step-number">3</span>
+                      <div class="step-content">
+                        <h4>Page Fault (Not Found)</h4>
+                        <p>
+                          If the page is not in memory, it's a
+                          <span class="fault-text">FAULT</span>. The page must
+                          be loaded.
+                        </p>
+                      </div>
+                    </div>
+                    <div class="step">
+                      <span class="step-number">4</span>
+                      <div class="step-content">
+                        <h4>Check for empty frames</h4>
+                        <p>
+                          If there's an empty frame available, place the new
+                          page there and push it onto the stack.
+                        </p>
+                      </div>
+                    </div>
+                    <div class="step">
+                      <span class="step-number">5</span>
+                      <div class="step-content">
+                        <h4>Replace using LIFO</h4>
+                        <p>
+                          If all frames are full, remove the page at the
+                          <strong>top of the stack</strong> (most recently
+                          added) and replace it with the new page.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <i class="bx bx-spreadsheet"></i>
+                  <h2>Worked Example</h2>
+                </div>
+                <div class="card-body">
+                  <div class="example-info">
+                    <p>
+                      <strong>Reference String:</strong> 7, 0, 1, 2, 0, 3, 0, 4
+                    </p>
+                    <p><strong>Number of Frames:</strong> 3</p>
+                  </div>
+                  <div class="example-table-wrapper">
+                    <table class="example-table">
+                      <thead>
+                        <tr>
+                          <th>Step</th>
+                          <th>Page</th>
+                          <th>Frame 1</th>
+                          <th>Frame 2</th>
+                          <th>Frame 3</th>
+                          <th>Stack (Top→Bottom)</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>1</td>
+                          <td class="page-cell">7</td>
+                          <td class="fault-cell">7</td>
+                          <td>-</td>
+                          <td>-</td>
+                          <td>[7]</td>
+                          <td><span class="badge fault">Fault</span></td>
+                        </tr>
+                        <tr>
+                          <td>2</td>
+                          <td class="page-cell">0</td>
+                          <td>7</td>
+                          <td class="fault-cell">0</td>
+                          <td>-</td>
+                          <td>[0, 7]</td>
+                          <td><span class="badge fault">Fault</span></td>
+                        </tr>
+                        <tr>
+                          <td>3</td>
+                          <td class="page-cell">1</td>
+                          <td>7</td>
+                          <td>0</td>
+                          <td class="fault-cell">1</td>
+                          <td>[1, 0, 7]</td>
+                          <td><span class="badge fault">Fault</span></td>
+                        </tr>
+                        <tr>
+                          <td>4</td>
+                          <td class="page-cell">2</td>
+                          <td>7</td>
+                          <td>0</td>
+                          <td class="replaced-cell">2</td>
+                          <td>[2, 0, 7]</td>
+                          <td>
+                            <span class="badge fault">Fault</span> (replaced 1)
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>5</td>
+                          <td class="page-cell">0</td>
+                          <td>7</td>
+                          <td class="hit-cell">0</td>
+                          <td>2</td>
+                          <td>[2, 0, 7]</td>
+                          <td><span class="badge hit">Hit</span></td>
+                        </tr>
+                        <tr>
+                          <td>6</td>
+                          <td class="page-cell">3</td>
+                          <td>7</td>
+                          <td>0</td>
+                          <td class="replaced-cell">3</td>
+                          <td>[3, 0, 7]</td>
+                          <td>
+                            <span class="badge fault">Fault</span> (replaced 2)
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>7</td>
+                          <td class="page-cell">0</td>
+                          <td>7</td>
+                          <td class="hit-cell">0</td>
+                          <td>3</td>
+                          <td>[3, 0, 7]</td>
+                          <td><span class="badge hit">Hit</span></td>
+                        </tr>
+                        <tr>
+                          <td>8</td>
+                          <td class="page-cell">4</td>
+                          <td>7</td>
+                          <td>0</td>
+                          <td class="replaced-cell">4</td>
+                          <td>[4, 0, 7]</td>
+                          <td>
+                            <span class="badge fault">Fault</span> (replaced 3)
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="example-summary">
+                    <div class="summary-item">
+                      <span class="summary-label">Total Hits:</span>
+                      <span class="summary-value hit-text">2</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">Total Faults:</span>
+                      <span class="summary-value fault-text">6</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">Hit Ratio:</span>
+                      <span class="summary-value">25%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <i class="bx bx-git-compare"></i>
+                  <h2>Comparison: LIFO vs FIFO vs LRU</h2>
+                </div>
+                <div class="card-body">
+                  <div class="comparison-table-wrapper">
+                    <table class="comparison-table">
+                      <thead>
+                        <tr>
+                          <th>Aspect</th>
+                          <th>LIFO</th>
+                          <th>FIFO</th>
+                          <th>LRU</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong>Full Name</strong></td>
+                          <td>Last In, First Out</td>
+                          <td>First In, First Out</td>
+                          <td>Least Recently Used</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Replacement Rule</strong></td>
+                          <td>Remove most recently added</td>
+                          <td>Remove oldest page</td>
+                          <td>Remove least recently accessed</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Data Structure</strong></td>
+                          <td>Stack</td>
+                          <td>Queue</td>
+                          <td>Priority Queue / Timestamps</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Implementation</strong></td>
+                          <td>Simple</td>
+                          <td>Simple</td>
+                          <td>Complex</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Performance</strong></td>
+                          <td>Generally poor</td>
+                          <td>Moderate</td>
+                          <td>Good (near optimal)</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Use Case</strong></td>
+                          <td>Educational / Rare</td>
+                          <td>Simple systems</td>
+                          <td>Modern OS & caches</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </div>
-            <nav class="tabs">
-                <button class="tab-btn active" data-tab="explanation">
-                    <i class='bx bx-book-open'></i>
-                    <span>Explanation</span>
-                </button>
-                <button class="tab-btn" data-tab="simulator">
-                    <i class='bx bx-play-circle'></i>
-                    <span>Simulator</span>
-                </button>
-            </nav>
-        </header>
 
-        <main class="main-content">
-            <!-- EXPLANATION TAB -->
-            <section id="explanation" class="tab-content active">
-                <div class="explanation-grid">
-                    <div class="explanation-main">
-                        <div class="card">
-                            <div class="card-header">
-                                <i class='bx bx-help-circle'></i>
-                                <h2>What is LIFO Page Replacement?</h2>
-                            </div>
-                            <div class="card-body">
-                                <p>LIFO (Last In, First Out) is a page replacement algorithm used in operating systems to manage memory. When a page fault occurs and memory is full, the algorithm removes the <strong>most recently added page</strong> to make room for the new one.</p>
-                                <div class="mnemonic-box">
-                                    <i class='bx bx-bulb'></i>
-                                    <div>
-                                        <strong>Think of it like a stack of plates:</strong>
-                                        <p>The last plate you put on top is the first one you take off. Similarly, the last page loaded into memory is the first one to be replaced.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header">
-                                <i class='bx bx-cog'></i>
-                                <h2>How LIFO Works (Step-by-Step)</h2>
-                            </div>
-                            <div class="card-body">
-                                <div class="steps-list">
-                                    <div class="step">
-                                        <span class="step-number">1</span>
-                                        <div class="step-content">
-                                            <h4>Check if page exists in memory</h4>
-                                            <p>When a page is requested, first check if it's already in one of the available frames.</p>
-                                        </div>
-                                    </div>
-                                    <div class="step">
-                                        <span class="step-number">2</span>
-                                        <div class="step-content">
-                                            <h4>Page Hit (Found)</h4>
-                                            <p>If the page is already in memory, it's a <span class="hit-text">HIT</span>. No replacement needed.</p>
-                                        </div>
-                                    </div>
-                                    <div class="step">
-                                        <span class="step-number">3</span>
-                                        <div class="step-content">
-                                            <h4>Page Fault (Not Found)</h4>
-                                            <p>If the page is not in memory, it's a <span class="fault-text">FAULT</span>. The page must be loaded.</p>
-                                        </div>
-                                    </div>
-                                    <div class="step">
-                                        <span class="step-number">4</span>
-                                        <div class="step-content">
-                                            <h4>Check for empty frames</h4>
-                                            <p>If there's an empty frame available, place the new page there and push it onto the stack.</p>
-                                        </div>
-                                    </div>
-                                    <div class="step">
-                                        <span class="step-number">5</span>
-                                        <div class="step-content">
-                                            <h4>Replace using LIFO</h4>
-                                            <p>If all frames are full, remove the page at the <strong>top of the stack</strong> (most recently added) and replace it with the new page.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header">
-                                <i class='bx bx-spreadsheet'></i>
-                                <h2>Worked Example</h2>
-                            </div>
-                            <div class="card-body">
-                                <div class="example-info">
-                                    <p><strong>Reference String:</strong> 7, 0, 1, 2, 0, 3, 0, 4</p>
-                                    <p><strong>Number of Frames:</strong> 3</p>
-                                </div>
-                                <div class="example-table-wrapper">
-                                    <table class="example-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Step</th>
-                                                <th>Page</th>
-                                                <th>Frame 1</th>
-                                                <th>Frame 2</th>
-                                                <th>Frame 3</th>
-                                                <th>Stack (Top→Bottom)</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>1</td>
-                                                <td class="page-cell">7</td>
-                                                <td class="fault-cell">7</td>
-                                                <td>-</td>
-                                                <td>-</td>
-                                                <td>[7]</td>
-                                                <td><span class="badge fault">Fault</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>2</td>
-                                                <td class="page-cell">0</td>
-                                                <td>7</td>
-                                                <td class="fault-cell">0</td>
-                                                <td>-</td>
-                                                <td>[0, 7]</td>
-                                                <td><span class="badge fault">Fault</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>3</td>
-                                                <td class="page-cell">1</td>
-                                                <td>7</td>
-                                                <td>0</td>
-                                                <td class="fault-cell">1</td>
-                                                <td>[1, 0, 7]</td>
-                                                <td><span class="badge fault">Fault</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>4</td>
-                                                <td class="page-cell">2</td>
-                                                <td>7</td>
-                                                <td>0</td>
-                                                <td class="replaced-cell">2</td>
-                                                <td>[2, 0, 7]</td>
-                                                <td><span class="badge fault">Fault</span> (replaced 1)</td>
-                                            </tr>
-                                            <tr>
-                                                <td>5</td>
-                                                <td class="page-cell">0</td>
-                                                <td>7</td>
-                                                <td class="hit-cell">0</td>
-                                                <td>2</td>
-                                                <td>[2, 0, 7]</td>
-                                                <td><span class="badge hit">Hit</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>6</td>
-                                                <td class="page-cell">3</td>
-                                                <td>7</td>
-                                                <td>0</td>
-                                                <td class="replaced-cell">3</td>
-                                                <td>[3, 0, 7]</td>
-                                                <td><span class="badge fault">Fault</span> (replaced 2)</td>
-                                            </tr>
-                                            <tr>
-                                                <td>7</td>
-                                                <td class="page-cell">0</td>
-                                                <td>7</td>
-                                                <td class="hit-cell">0</td>
-                                                <td>3</td>
-                                                <td>[3, 0, 7]</td>
-                                                <td><span class="badge hit">Hit</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>8</td>
-                                                <td class="page-cell">4</td>
-                                                <td>7</td>
-                                                <td>0</td>
-                                                <td class="replaced-cell">4</td>
-                                                <td>[4, 0, 7]</td>
-                                                <td><span class="badge fault">Fault</span> (replaced 3)</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="example-summary">
-                                    <div class="summary-item">
-                                        <span class="summary-label">Total Hits:</span>
-                                        <span class="summary-value hit-text">2</span>
-                                    </div>
-                                    <div class="summary-item">
-                                        <span class="summary-label">Total Faults:</span>
-                                        <span class="summary-value fault-text">6</span>
-                                    </div>
-                                    <div class="summary-item">
-                                        <span class="summary-label">Hit Ratio:</span>
-                                        <span class="summary-value">25%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header">
-                                <i class='bx bx-git-compare'></i>
-                                <h2>Comparison: LIFO vs FIFO vs LRU</h2>
-                            </div>
-                            <div class="card-body">
-                                <div class="comparison-table-wrapper">
-                                    <table class="comparison-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Aspect</th>
-                                                <th>LIFO</th>
-                                                <th>FIFO</th>
-                                                <th>LRU</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td><strong>Full Name</strong></td>
-                                                <td>Last In, First Out</td>
-                                                <td>First In, First Out</td>
-                                                <td>Least Recently Used</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Replacement Rule</strong></td>
-                                                <td>Remove most recently added</td>
-                                                <td>Remove oldest page</td>
-                                                <td>Remove least recently accessed</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Data Structure</strong></td>
-                                                <td>Stack</td>
-                                                <td>Queue</td>
-                                                <td>Priority Queue / Timestamps</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Implementation</strong></td>
-                                                <td>Simple</td>
-                                                <td>Simple</td>
-                                                <td>Complex</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Performance</strong></td>
-                                                <td>Generally poor</td>
-                                                <td>Moderate</td>
-                                                <td>Good (near optimal)</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Use Case</strong></td>
-                                                <td>Educational / Rare</td>
-                                                <td>Simple systems</td>
-                                                <td>Modern OS & caches</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <aside class="explanation-sidebar">
-                        <div class="card info-card">
-                            <div class="card-header">
-                                <i class='bx bx-info-circle'></i>
-                                <h3>Quick Facts</h3>
-                            </div>
-                            <div class="card-body">
-                                <ul class="quick-facts">
-                                    <li><i class='bx bx-check-circle'></i> Uses a Stack data structure</li>
-                                    <li><i class='bx bx-check-circle'></i> O(1) replacement decision</li>
-                                    <li><i class='bx bx-check-circle'></i> Simple to implement</li>
-                                    <li><i class='bx bx-check-circle'></i> No access tracking needed</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="card pros-card">
-                            <div class="card-header">
-                                <i class='bx bx-like'></i>
-                                <h3>Pros</h3>
-                            </div>
-                            <div class="card-body">
-                                <ul class="pros-list">
-                                    <li><i class='bx bx-plus-circle'></i> Very simple algorithm</li>
-                                    <li><i class='bx bx-plus-circle'></i> Easy to implement</li>
-                                    <li><i class='bx bx-plus-circle'></i> Low overhead</li>
-                                    <li><i class='bx bx-plus-circle'></i> Constant time O(1)</li>
-                                    <li><i class='bx bx-plus-circle'></i> Good for learning concepts</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="card cons-card">
-                            <div class="card-header">
-                                <i class='bx bx-dislike'></i>
-                                <h3>Cons</h3>
-                            </div>
-                            <div class="card-body">
-                                <ul class="cons-list">
-                                    <li><i class='bx bx-minus-circle'></i> Poor hit ratio</li>
-                                    <li><i class='bx bx-minus-circle'></i> Ignores page access patterns</li>
-                                    <li><i class='bx bx-minus-circle'></i> Not used in real systems</li>
-                                    <li><i class='bx bx-minus-circle'></i> Can cause thrashing</li>
-                                    <li><i class='bx bx-minus-circle'></i> Belady's anomaly possible</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="card stack-demo-card">
-                            <div class="card-header">
-                                <i class='bx bx-layer'></i>
-                                <h3>Stack Animation</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="stack-demo">
-                                    <div class="demo-stack" id="demoStack">
-                                        <div class="demo-stack-item top">3</div>
-                                        <div class="demo-stack-item">2</div>
-                                        <div class="demo-stack-item">1</div>
-                                    </div>
-                                    <div class="demo-controls">
-                                        <button class="demo-btn push-btn" onclick="demoPush()">
-                                            <i class='bx bx-up-arrow-alt'></i> Push
-                                        </button>
-                                        <button class="demo-btn pop-btn" onclick="demoPop()">
-                                            <i class='bx bx-down-arrow-alt'></i> Pop
-                                        </button>
-                                    </div>
-                                    <p class="demo-label"><i class='bx bx-arrow-to-top'></i> Top of Stack</p>
-                                </div>
-                            </div>
-                        </div>
-                    </aside>
+            <aside class="explanation-sidebar">
+              <div class="card info-card">
+                <div class="card-header">
+                  <i class="bx bx-info-circle"></i>
+                  <h3>Quick Facts</h3>
                 </div>
-            </section>
-
-            <!-- SIMULATOR TAB -->
-            <section id="simulator" class="tab-content">
-                <div class="simulator-container">
-                    <div class="controls-panel card">
-                        <div class="card-header">
-                            <i class='bx bx-slider-alt'></i>
-                            <h2>Configuration</h2>
-                        </div>
-                        <div class="card-body">
-                            <div class="input-grid">
-                                <div class="input-group">
-                                    <label for="framesInput">
-                                        <i class='bx bx-grid-alt'></i>
-                                        Number of Frames
-                                    </label>
-                                    <input type="number" id="framesInput" min="1" max="10" value="3" placeholder="1-10">
-                                </div>
-                                <div class="input-group">
-                                    <label for="refStringInput">
-                                        <i class='bx bx-hash'></i>
-                                        Reference String
-                                    </label>
-                                    <input type="text" id="refStringInput" placeholder="e.g., 7 0 1 2 0 3 0 4">
-                                </div>
-                            </div>
-                            <div class="button-row">
-                                <button class="btn btn-secondary" id="randomBtn">
-                                    <i class='bx bx-shuffle'></i>
-                                    Random
-                                </button>
-                                <button class="btn btn-secondary" id="exampleBtn">
-                                    <i class='bx bx-bookmark'></i>
-                                    Example
-                                </button>
-                                <button class="btn btn-primary" id="loadBtn">
-                                    <i class='bx bx-check-circle'></i>
-                                    Load & Validate
-                                </button>
-                                <button class="btn btn-danger" id="resetBtn">
-                                    <i class='bx bx-reset'></i>
-                                    Reset
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="playback-panel card">
-                        <div class="card-header">
-                            <i class='bx bx-play'></i>
-                            <h2>Playback Controls</h2>
-                        </div>
-                        <div class="card-body">
-                            <div class="speed-selector">
-                                <label><i class='bx bx-timer'></i> Speed:</label>
-                                <div class="speed-buttons">
-                                    <button class="speed-btn" data-speed="700">Slow</button>
-                                    <button class="speed-btn active" data-speed="400">Medium</button>
-                                    <button class="speed-btn" data-speed="150">Fast</button>
-                                </div>
-                            </div>
-                            <div class="playback-buttons">
-                                <button class="btn btn-control" id="prevBtn" disabled>
-                                    <i class='bx bx-skip-previous'></i>
-                                    Previous
-                                </button>
-                                <button class="btn btn-success" id="startBtn" disabled>
-                                    <i class='bx bx-play'></i>
-                                    Start
-                                </button>
-                                <button class="btn btn-control" id="playBtn" disabled>
-                                    <i class='bx bx-play-circle'></i>
-                                    Auto Play
-                                </button>
-                                <button class="btn btn-control" id="pauseBtn" disabled>
-                                    <i class='bx bx-pause-circle'></i>
-                                    Pause
-                                </button>
-                                <button class="btn btn-control" id="nextBtn" disabled>
-                                    <i class='bx bx-skip-next'></i>
-                                    Next
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="visualization-area">
-                        <div class="frames-section card">
-                            <div class="card-header">
-                                <i class='bx bx-table'></i>
-                                <h2>Frames Table</h2>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-wrapper" id="tableWrapper">
-                                    <div class="placeholder-message">
-                                        <i class='bx bx-loader-alt'></i>
-                                        <p>Load a reference string to begin simulation</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="stack-section card">
-                            <div class="card-header">
-                                <i class='bx bx-layer'></i>
-                                <h2>Stack View</h2>
-                            </div>
-                            <div class="card-body">
-                                <div class="stack-container" id="stackContainer">
-                                    <div class="placeholder-message">
-                                        <i class='bx bx-layer'></i>
-                                        <p>Stack will appear here</p>
-                                    </div>
-                                </div>
-                                <div class="stack-label">
-                                    <i class='bx bx-arrow-to-top'></i> Top of Stack
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="stats-panel card">
-                        <div class="card-header">
-                            <i class='bx bx-bar-chart-alt-2'></i>
-                            <h2>Statistics</h2>
-                        </div>
-                        <div class="card-body">
-                            <div class="stats-grid">
-                                <div class="stat-item">
-                                    <div class="stat-icon hit-bg">
-                                        <i class='bx bx-check-circle'></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <span class="stat-label">Total Hits</span>
-                                        <span class="stat-value" id="totalHits">0</span>
-                                    </div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-icon fault-bg">
-                                        <i class='bx bx-x-circle'></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <span class="stat-label">Total Faults</span>
-                                        <span class="stat-value" id="totalFaults">0</span>
-                                    </div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-icon step-bg">
-                                        <i class='bx bx-list-ol'></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <span class="stat-label">Current Step</span>
-                                        <span class="stat-value"><span id="currentStep">0</span> / <span id="totalSteps">0</span></span>
-                                    </div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-icon ratio-bg">
-                                        <i class='bx bx-pie-chart-alt-2'></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <span class="stat-label">Hit Ratio</span>
-                                        <span class="stat-value" id="hitRatio">0%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="log-panel card">
-                        <div class="card-header">
-                            <i class='bx bx-list-ul'></i>
-                            <h2>Action Log</h2>
-                        </div>
-                        <div class="card-body">
-                            <div class="log-container" id="logContainer">
-                                <div class="placeholder-message">
-                                    <i class='bx bx-message-square-detail'></i>
-                                    <p>Actions will be logged here during simulation</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="card-body">
+                  <ul class="quick-facts">
+                    <li>
+                      <i class="bx bx-check-circle"></i> Uses a Stack data
+                      structure
+                    </li>
+                    <li>
+                      <i class="bx bx-check-circle"></i> O(1) replacement
+                      decision
+                    </li>
+                    <li>
+                      <i class="bx bx-check-circle"></i> Simple to implement
+                    </li>
+                    <li>
+                      <i class="bx bx-check-circle"></i> No access tracking
+                      needed
+                    </li>
+                  </ul>
                 </div>
-            </section>
-        </main>
+              </div>
 
-        <div class="alert-container" id="alertContainer"></div>
+              <div class="card pros-card">
+                <div class="card-header">
+                  <i class="bx bx-like"></i>
+                  <h3>Pros</h3>
+                </div>
+                <div class="card-body">
+                  <ul class="pros-list">
+                    <li>
+                      <i class="bx bx-plus-circle"></i> Very simple algorithm
+                    </li>
+                    <li><i class="bx bx-plus-circle"></i> Easy to implement</li>
+                    <li><i class="bx bx-plus-circle"></i> Low overhead</li>
+                    <li>
+                      <i class="bx bx-plus-circle"></i> Constant time O(1)
+                    </li>
+                    <li>
+                      <i class="bx bx-plus-circle"></i> Good for learning
+                      concepts
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="card cons-card">
+                <div class="card-header">
+                  <i class="bx bx-dislike"></i>
+                  <h3>Cons</h3>
+                </div>
+                <div class="card-body">
+                  <ul class="cons-list">
+                    <li><i class="bx bx-minus-circle"></i> Poor hit ratio</li>
+                    <li>
+                      <i class="bx bx-minus-circle"></i> Ignores page access
+                      patterns
+                    </li>
+                    <li>
+                      <i class="bx bx-minus-circle"></i> Not used in real
+                      systems
+                    </li>
+                    <li>
+                      <i class="bx bx-minus-circle"></i> Can cause thrashing
+                    </li>
+                    <li>
+                      <i class="bx bx-minus-circle"></i> Belady's anomaly
+                      possible
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="card stack-demo-card">
+                <div class="card-header">
+                  <i class="bx bx-layer"></i>
+                  <h3>Stack Animation</h3>
+                </div>
+                <div class="card-body">
+                  <div class="stack-demo">
+                    <div class="demo-stack" id="demoStack">
+                      <div class="demo-stack-item top">3</div>
+                      <div class="demo-stack-item">2</div>
+                      <div class="demo-stack-item">1</div>
+                    </div>
+                    <div class="demo-controls">
+                      <button class="demo-btn push-btn" onclick="demoPush()">
+                        <i class="bx bx-up-arrow-alt"></i> Push
+                      </button>
+                      <button class="demo-btn pop-btn" onclick="demoPop()">
+                        <i class="bx bx-down-arrow-alt"></i> Pop
+                      </button>
+                    </div>
+                    <p class="demo-label">
+                      <i class="bx bx-arrow-to-top"></i> Top of Stack
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NEW: LIFO Chatbot -->
+              <div class="card chatbot-card">
+    <div class="card-header" style="justify-content: space-between;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <i class='bx bx-bot'></i>
+            <h3>LIFO AI Bot</h3>
+        </div>
+        <button id="toggleKeyBtn" class="icon-btn" title="Set API Key">
+            <i class='bx bx-key'></i>
+        </button>
+    </div>
+    
+    <div class="card-body">
+        <!-- API Key Input (Hidden by default) -->
+        <div id="apiKeyPanel" class="api-key-panel" style="display: none;">
+            <input type="password" id="apiKeyInput" placeholder="Paste Google Gemini API Key">
+            <button id="saveKeyBtn">Save</button>
+            <div class="api-help">
+                <small>Don't have a key? <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent-cyan)">Get one free here</a></small>
+            </div>
+        </div>
+
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-message bot">
+                Hello! I am connected to AI. Ask me anything about LIFO, Paging, or OS concepts! 🤖
+            </div>
+        </div>
+        
+        <!-- Quick Suggestions -->
+        <div class="chat-chips">
+            <button onclick="askBot('Explain LIFO like I am 5')">Explain like I'm 5</button>
+            <button onclick="askBot('Why is LIFO bad for OS?')">Why is it bad?</button>
+            <button onclick="askBot('Write a C++ code for LIFO')">Code Example</button>
+        </div>
+
+        <div class="chat-input-wrapper">
+            <input type="text" id="userChatInput" placeholder="Ask AI a question...">
+            <button id="sendChatBtn"><i class='bx bx-send'></i></button>
+        </div>
+    </div>
+</div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- SIMULATOR TAB -->
+        <section id="simulator" class="tab-content">
+          <div class="simulator-container">
+            <div class="controls-panel card">
+              <div class="card-header">
+                <i class="bx bx-slider-alt"></i>
+                <h2>Configuration</h2>
+              </div>
+              <div class="card-body">
+                <div class="input-grid">
+                  <div class="input-group">
+                    <label for="framesInput">
+                      <i class="bx bx-grid-alt"></i>
+                      Number of Frames
+                    </label>
+                    <input
+                      type="number"
+                      id="framesInput"
+                      min="1"
+                      max="10"
+                      value="3"
+                      placeholder="1-10"
+                    />
+                  </div>
+                  <div class="input-group">
+                    <label for="refStringInput">
+                      <i class="bx bx-hash"></i>
+                      Reference String
+                    </label>
+                    <input
+                      type="text"
+                      id="refStringInput"
+                      placeholder="e.g., 7 0 1 2 0 3 0 4"
+                    />
+                  </div>
+                  <div class="input-group">
+                    <label for="themeSelect">
+                      <i class="bx bx-palette"></i>
+                      Color Theme
+                    </label>
+                    <select id="themeSelect">
+                      <option value="default">🌌 Default (Cosmic)</option>
+                      <option value="matrix">💻 Matrix (Hacker)</option>
+                      <option value="sunset">🌅 Sunset (Warm)</option>
+                      <option value="neon">⚡ Neon (Cyberpunk)</option>
+                      <option value="pastel">🍦 Pastel (Soft)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="button-row">
+                  <button class="btn btn-secondary" id="randomBtn">
+                    <i class="bx bx-shuffle"></i>
+                    Random
+                  </button>
+                  <button class="btn btn-secondary" id="exampleBtn">
+                    <i class="bx bx-bookmark"></i>
+                    Example
+                  </button>
+                  <button class="btn btn-primary" id="loadBtn">
+                    <i class="bx bx-check-circle"></i>
+                    Load & Validate
+                  </button>
+                  <button class="btn btn-danger" id="resetBtn">
+                    <i class="bx bx-reset"></i>
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="playback-panel card">
+              <div class="card-header">
+                <i class="bx bx-play"></i>
+                <h2>Playback Controls</h2>
+              </div>
+              <div class="card-body">
+                <div class="speed-selector">
+                  <label><i class="bx bx-timer"></i> Speed:</label>
+                  <div class="speed-buttons">
+                    <button class="speed-btn" data-speed="700">Slow</button>
+                    <button class="speed-btn active" data-speed="400">
+                      Medium
+                    </button>
+                    <button class="speed-btn" data-speed="150">Fast</button>
+                  </div>
+                </div>
+                <div class="playback-buttons">
+                  <button class="btn btn-control" id="prevBtn" disabled>
+                    <i class="bx bx-skip-previous"></i>
+                    Previous
+                  </button>
+                  <button class="btn btn-success" id="startBtn" disabled>
+                    <i class="bx bx-play"></i>
+                    Start
+                  </button>
+                  <button class="btn btn-control" id="playBtn" disabled>
+                    <i class="bx bx-play-circle"></i>
+                    Auto Play
+                  </button>
+                  <button class="btn btn-control" id="pauseBtn" disabled>
+                    <i class="bx bx-pause-circle"></i>
+                    Pause
+                  </button>
+                  <button class="btn btn-control" id="nextBtn" disabled>
+                    <i class="bx bx-skip-next"></i>
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="visualization-area">
+              <div class="frames-section card">
+                <div class="card-header">
+                  <i class="bx bx-table"></i>
+                  <h2>Frames Table</h2>
+                </div>
+                <div class="card-body">
+                  <div class="table-wrapper" id="tableWrapper">
+                    <div class="placeholder-message">
+                      <i class="bx bx-loader-alt"></i>
+                      <p>Load a reference string to begin simulation</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stack-section card">
+                <div class="card-header">
+                  <i class="bx bx-layer"></i>
+                  <h2>Stack View</h2>
+                </div>
+                <div class="card-body">
+                  <div class="stack-container" id="stackContainer">
+                    <div class="placeholder-message">
+                      <i class="bx bx-layer"></i>
+                      <p>Stack will appear here</p>
+                    </div>
+                  </div>
+                  <div class="stack-label">
+                    <i class="bx bx-arrow-to-top"></i> Top of Stack
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-section card">
+              <div class="card-header">
+                <i class="bx bx-line-chart"></i>
+                <h2>Performance Analysis</h2>
+              </div>
+              <div class="card-body">
+                <div
+                  class="chart-container"
+                  style="position: relative; height: 300px; width: 100%"
+                >
+                  <canvas id="hitRatioChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="stats-panel card">
+              <div class="card-header">
+                <i class="bx bx-bar-chart-alt-2"></i>
+                <h2>Statistics</h2>
+              </div>
+              <div class="card-body">
+                <div class="stats-grid">
+                  <div class="stat-item">
+                    <div class="stat-icon hit-bg">
+                      <i class="bx bx-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                      <span class="stat-label">Total Hits</span>
+                      <span class="stat-value" id="totalHits">0</span>
+                    </div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-icon fault-bg">
+                      <i class="bx bx-x-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                      <span class="stat-label">Total Faults</span>
+                      <span class="stat-value" id="totalFaults">0</span>
+                    </div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-icon step-bg">
+                      <i class="bx bx-list-ol"></i>
+                    </div>
+                    <div class="stat-info">
+                      <span class="stat-label">Current Step</span>
+                      <span class="stat-value"
+                        ><span id="currentStep">0</span> /
+                        <span id="totalSteps">0</span></span
+                      >
+                    </div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-icon ratio-bg">
+                      <i class="bx bx-pie-chart-alt-2"></i>
+                    </div>
+                    <div class="stat-info">
+                      <span class="stat-label">Hit Ratio</span>
+                      <span class="stat-value" id="hitRatio">0%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="log-panel card">
+              <div class="card-header">
+                <i class="bx bx-list-ul"></i>
+                <h2>Action Log</h2>
+              </div>
+              <div class="card-body">
+                <div class="log-container" id="logContainer">
+                  <div class="placeholder-message">
+                    <i class="bx bx-message-square-detail"></i>
+                    <p>Actions will be logged here during simulation</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div class="alert-container" id="alertContainer"></div>
     </div>
 
     <script src="script.js"></script>
-</body>
+  </body>
 </html>

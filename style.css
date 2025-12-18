@@ -1,6 +1,6 @@
 :root {
     --bg-primary: #0f172a;
-    --bg-secondary: #071426;
+    --bg-secondary: #0a1524;
     --bg-card: rgba(30, 41, 59, 0.7);
     --bg-card-hover: rgba(51, 65, 85, 0.7);
     --text-primary: #f1f5f9;
@@ -687,6 +687,23 @@ body {
     text-align: center;
     border: 1px solid var(--border-color);
     min-width: 60px;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s;
+    position: relative; /* For potential tooltips or badges */
+}
+
+/* Optional: Add a tiny dot to indicate it's getting old */
+.frames-table td[title*="Age: 5"]::after,
+.frames-table td[title*="Age: 6"]::after,
+.frames-table td[title*="Age: 7"]::after,
+.frames-table td[title*="Age: 8"]::after,
+.frames-table td[title*="Age: 9"]::after {
+    content: '•';
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    opacity: 0.7;
 }
 
 .frames-table th {
@@ -1080,4 +1097,543 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--accent-purple-light);
+}
+
+/* Update this existing rule to add transition and position */
+.frames-table td {
+    padding: 12px 16px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    min-width: 60px;
+    /* NEW: Smooth transition for color changes */
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s;
+    /* NEW: Needed for the 'dot' indicator */
+    position: relative;
+}
+
+/* NEW: Add a tiny dot to indicate pages getting old (Age 5+) */
+.frames-table td[title*="Age: 5"]::after,
+.frames-table td[title*="Age: 6"]::after,
+.frames-table td[title*="Age: 7"]::after,
+.frames-table td[title*="Age: 8"]::after,
+.frames-table td[title*="Age: 9"]::after,
+.frames-table td[title*="Age: 1"]::after { /* Matches 10, 11 etc */
+    content: '•';
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+.chart-section {
+    margin-top: 20px;
+    animation: fadeIn 0.4s ease;
+}
+
+.chart-container {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--border-radius-sm);
+    padding: 10px;
+}
+
+/* ================= THEME ENGINE ================= */
+
+/* 1. MATRIX THEME */
+body.theme-matrix {
+    --bg-primary: #000000;
+    --bg-secondary: #0a0a0a;
+    --bg-card: rgba(0, 20, 0, 0.9);
+    --text-primary: #00ff41;
+    --text-secondary: #008f11;
+    --text-muted: #003b00;
+    --accent-purple: #00ff41; /* Hacker Green */
+    --accent-purple-light: #50ff7c;
+    --accent-blue: #008f11;
+    --accent-cyan: #003b00;
+    --border-color: #003b00;
+    --shadow-color: rgba(0, 255, 65, 0.1);
+    font-family: 'Courier New', monospace; /* Hacker Font */
+}
+body.theme-matrix .frames-table th { background: rgba(0, 255, 65, 0.15); color: #00ff41; }
+body.theme-matrix .ref-row th { background: #003b00; color: #00ff41; }
+
+/* 2. SUNSET THEME */
+body.theme-sunset {
+    --bg-primary: #431407; /* Dark Red/Brown */
+    --bg-secondary: #2a0a05;
+    --bg-card: rgba(67, 20, 7, 0.8);
+    --text-primary: #fff7ed;
+    --text-secondary: #fdba74;
+    --accent-purple: #ea580c; /* Orange */
+    --accent-purple-light: #f97316;
+    --accent-blue: #db2777; /* Pink */
+    --accent-cyan: #facc15; /* Yellow */
+    --success-green: #f97316; /* Orange for hits */
+    --success-green-light: #fb923c;
+    --border-color: rgba(251, 146, 60, 0.2);
+}
+body.theme-sunset .ref-row th { background: linear-gradient(135deg, #ea580c 0%, #db2777 100%); }
+
+/* 3. NEON CYBERPUNK THEME */
+body.theme-neon {
+    --bg-primary: #020024;
+    --bg-secondary: #090979;
+    --bg-card: rgba(16, 0, 43, 0.8);
+    --accent-purple: #d900ff; /* Hot Pink */
+    --accent-purple-light: #ff00cc;
+    --accent-blue: #00d4ff; /* Cyan */
+    --accent-cyan: #00ff9d; /* Mint */
+    --border-color: rgba(217, 0, 255, 0.3);
+    --shadow-color: rgba(217, 0, 255, 0.2);
+}
+body.theme-neon .ref-row th { background: linear-gradient(90deg, #d900ff 0%, #00d4ff 100%); }
+
+/* 4. PASTEL THEME */
+body.theme-pastel {
+    --bg-primary: #fdf2f8; /* Very light pink */
+    --bg-secondary: #f0f9ff; /* Very light blue */
+    --bg-card: rgba(255, 255, 255, 0.8);
+    --text-primary: #475569; /* Dark Gray text */
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --accent-purple: #a78bfa; /* Soft Purple */
+    --accent-purple-light: #c4b5fd;
+    --accent-blue: #60a5fa; /* Soft Blue */
+    --accent-cyan: #2dd4bf; /* Soft Teal */
+    --border-color: rgba(167, 139, 250, 0.2);
+    --shadow-color: rgba(0, 0, 0, 0.05);
+}
+body.theme-pastel .frames-table th { color: #475569; }
+body.theme-pastel .ref-row th { color: white; }
+
+/* ================= CUSTOM DROPDOWN STYLING ================= */
+
+/* 1. Style the Select Box to match other Inputs */
+.input-group select {
+    width: 100%;
+    padding: 12px 16px;
+    padding-right: 40px; /* Space for custom arrow */
+    
+    /* Dynamic Background based on theme */
+    background-color: rgba(0, 0, 0, 0.3); 
+    
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    transition: all var(--transition-fast);
+    
+    /* Remove default ugly arrow */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+    /* Add Custom SVG Arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+/* 2. Focus State (Glow) */
+.input-group select:focus {
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+/* 3. Style the Dropdown Options (The list that opens up) */
+.input-group select option {
+    background-color: var(--bg-secondary); /* Matches the theme background */
+    color: var(--text-primary); /* Matches theme text */
+    padding: 12px;
+}
+
+/* ================= THEME SPECIFIC ADJUSTMENTS ================= */
+
+/* Fix for Pastel Theme (Needs lighter input background) */
+body.theme-pastel .input-group select,
+body.theme-pastel .input-group input {
+    background-color: rgba(255, 255, 255, 0.6);
+    color: var(--text-primary);
+    border-color: rgba(167, 139, 250, 0.4);
+}
+
+/* Fix for Matrix Theme (Green borders) */
+body.theme-matrix .input-group select {
+    background-color: rgba(0, 20, 0, 0.8);
+    border: 1px solid #00ff41;
+    color: #00ff41;
+    /* Change arrow to Green for Matrix */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300ff41' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+/* ================= CHATBOT STYLES ================= */
+
+.chatbot-card {
+    display: flex;
+    flex-direction: column;
+    /* Matches width of stack card automatically via parent grid */
+    height: 600px; /* Fixed height to keep it "small" but usable */
+}
+
+.chatbot-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.chat-window {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-right: 5px;
+    margin-bottom: 5px;
+}
+
+/* Scrollbar for chat */
+.chat-window::-webkit-scrollbar { width: 4px; }
+.chat-window::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+.chat-message {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    animation: fadeIn 0.3s ease;
+}
+
+.chat-message.bot {
+    align-self: flex-start;
+    background: rgba(0, 0, 0, 0.25);
+    border-bottom-left-radius: 2px;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.chat-message.user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+    border-bottom-right-radius: 2px;
+    color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+/* Suggestion Chips */
+.chat-chips {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+.chat-chips::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome */
+
+.chat-chips button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chat-chips button:hover {
+    background: var(--accent-purple);
+    color: white;
+    border-color: var(--accent-purple);
+}
+
+/* Input Area */
+.chat-input-wrapper {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.chat-input-wrapper input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    border-radius: var(--border-radius-sm);
+    color: var(--text-primary);
+    outline: none;
+}
+
+.chat-input-wrapper input:focus {
+    border-color: var(--accent-purple);
+}
+
+#sendChatBtn {
+    background: var(--accent-purple);
+    color: white;
+    border: none;
+    width: 40px;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#sendChatBtn:hover {
+    background: var(--accent-purple-light);
+}
+
+/* Add to Chatbot Styles section */
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.icon-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.1);
+}
+
+.api-key-panel {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid var(--accent-purple);
+    animation: fadeIn 0.3s ease;
+}
+
+.api-key-panel input {
+    width: 70%;
+    padding: 6px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid var(--border-color);
+    color: white;
+    border-radius: 4px;
+}
+
+.api-key-panel button {
+    width: 25%;
+    padding: 6px;
+    background: var(--success-green);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.api-help {
+    margin-top: 5px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* ================= FORMATTED CHAT STYLES ================= */
+
+/* 1. Preserve Line Breaks in messages */
+.chat-message {
+    white-space: pre-wrap; /* This makes \n work as line breaks */
+    word-wrap: break-word;
+}
+
+/* 2. Code Block Styling */
+.code-block {
+    background: #1e1e1e; /* VS Code Dark bg */
+    color: #d4d4d4;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 10px 0;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.85rem;
+    overflow-x: auto; /* Scrollbar for long code */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 3. Inline Code Styling (e.g., `std::vector`) */
+.inline-code {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: monospace;
+    color: var(--accent-cyan);
+}
+
+/* 4. Bold Text Styling */
+.chat-message strong {
+    color: var(--accent-purple-light);
+    font-weight: 700;
+}
+/* Export PDF button (fits theme) */
+.export-pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 6px 18px rgba(124,58,237,0.12);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.export-pdf-btn i { font-size: 1.05rem; }
+
+/* Hover */
+.export-pdf-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(124,58,237,0.16);
+}
+
+/* Make lighter for disabled state if ever needed */
+.export-pdf-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Theme overrides so button matches the selected theme */
+body.theme-matrix .export-pdf-btn {
+    background: linear-gradient(135deg, #00ff41 0%, #008f11 100%);
+    box-shadow: 0 6px 18px rgba(0,255,65,0.08);
+}
+body.theme-sunset .export-pdf-btn {
+    background: linear-gradient(135deg, #ea580c 0%, #db2777 100%);
+}
+body.theme-neon .export-pdf-btn {
+    background: linear-gradient(135deg, #d900ff 0%, #00d4ff 100%);
+}
+body.theme-pastel .export-pdf-btn {
+    background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+    color: #fff;
+}
+
+/* ================= STACK HOVER EXPAND ================= */
+
+.stack-item {
+    /* Update existing .stack-item props */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px; /* Use min-height instead of fixed height */
+    padding: 10px;
+    
+    /* Bouncy transition */
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: help; /* Shows question mark cursor */
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+.stack-item:hover {
+    transform: scale(1.05);
+    min-height: 110px; /* Expands on hover */
+    z-index: 10;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.stack-val {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stack-details {
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-top: 10px;
+    font-size: 0.75rem;
+    opacity: 0;
+    width: 100%;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+.stack-item:hover .stack-details {
+    display: flex;
+    animation: fadeIn 0.4s 0.1s forwards; /* Slight delay */
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    color: rgba(255,255,255,0.9);
+}
+
+.detail-label {
+    opacity: 0.7;
+    margin-right: 8px;
+}
+/* ================= STACK HOVER & TOOLTIP ================= */
+
+:root {
+    --theme-glow: #06b6d4; /* Default Glow (Cyan) */
+}
+
+/* Update Theme Glows */
+body.theme-matrix { --theme-glow: #00ff41; }
+body.theme-sunset { --theme-glow: #ea580c; }
+body.theme-neon   { --theme-glow: #d900ff; }
+body.theme-pastel { --theme-glow: #a78bfa; }
+
+.stack-item {
+    position: relative;
+    padding: 10px;
+    margin: 5px 0;
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 5px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.stack-item:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 15px #00eaff;
+    z-index: 10;
+}
+
+/* Tooltip */
+.stack-item::after {
+    content: "Value: " attr(data-value) "\AIndex: " attr(data-index) "\ATime: " attr(data-time);
+    white-space: pre-line;
+    position: absolute;
+    left: 110%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.85);
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.75rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    min-width: 150px;
+    border: 1px solid #00eaff;
+}
+
+.stack-item:hover::after {
+    opacity: 1;
 }
